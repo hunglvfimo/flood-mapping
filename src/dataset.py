@@ -19,7 +19,7 @@ data_dir = os.path.join("..", "..", "..", "data", "processed", "PI_SAR2_FINE")
 
 class SEMDataset(Dataset):
 
-    def __init__(self, image_path, mask_path, is_train=False):
+    def __init__(self, image_dir, mask_dir, is_train=False):
         """
         Args:
             image_path (str): the path where the image is located
@@ -27,10 +27,10 @@ class SEMDataset(Dataset):
             option (str): decide which dataset to import
         """
         # all file names
-        self.image_paths = glob.glob(os.path.join(mask_path, "*"))
+        self.image_paths = glob.glob(os.path.join(image_dir, "*.tiff"))
         self.image_paths.sort()
 
-        self.mask_paths = glob.glob(os.path.join(image_path, "*"))
+        self.mask_paths = glob.glob(os.path.join(mask_dir, "*.png"))
         self.mask_paths.sort()
 
         self.is_train = is_train
