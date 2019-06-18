@@ -1,6 +1,10 @@
+import os
+import glob
 import numpy as np
 from PIL import Image
 import random
+import matplotlib.pyplot as plt
+import tifffile as tiff
 
 import torch
 import torch.nn as nn
@@ -10,11 +14,6 @@ import torchvision.transforms.functional as TF
 from torch.autograd import Variable
 
 from pre_processing import *
-
-import os
-import glob
-
-import matplotlib.pyplot as plt
 
 data_dir = os.path.join("..", "..", "..", "data", "processed", "PI_SAR2_FINE")
 
@@ -56,14 +55,14 @@ class SEMDataset(Dataset):
 
         # Transform to tensor
         image = TF.to_tensor(image)
-        mask = convert_mask_to_grayscale(np.array(mask))
         mask = torch.from_numpy(mask).long()
 
         return image, mask
 
     def __getitem__(self, index):
-        image = Image.open(self.image_paths[index])
-        mask = Image.open(self.mask_paths[index])
+        image = tiff.imread(self.image_paths[index])
+
+        mask = Image.open(self.mask_paths[index]).convert('L')
         
         x, y = self.transform(image, mask)
         return x, y
