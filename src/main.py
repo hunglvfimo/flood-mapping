@@ -59,8 +59,8 @@ if __name__ == "__main__":
         train_model(model, train_loader, criterion, optimizer)
         # Validation every 5 epoch
         if (i + 1) % args.val_interval == 0:
-            train_acc, train_loss = get_loss_train(model, train_loader, criterion)
-            val_acc, val_loss = validate_model(model, val_loader, criterion, i + 1, True, save_dir)
+            train_acc, train_loss = get_loss(model, train_loader, criterion)
+            val_acc, val_loss = get_loss(model, val_loader, criterion)
             
             print('Epoch %d, Train loss: %.3f, Train acc: %.3f, Val loss: %.3f, Val acc: %.3f' % (i + 1, train_loss, train_acc, val_loss, val_acc))
 

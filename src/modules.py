@@ -35,7 +35,7 @@ def train_model(model, train_loader, criterion, optimizer):
         # Update weights
         optimizer.step()
 
-def get_loss_train(model, data_train, criterion):
+def get_loss(model, data_train, criterion):
     """
         Calculate loss over train set
     """
