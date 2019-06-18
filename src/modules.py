@@ -12,7 +12,7 @@ import torch.nn as nn
 
 from accuracy import accuracy_check, accuracy_check_for_batch
 
-def train_model(model, train_loader, criterion, optimizer):
+def train_model(model, train_loader, criterion, optimizer, scheduler):
     """Train the model and report validation error with training error
     Args:
         model: the model to be trained
@@ -20,6 +20,7 @@ def train_model(model, train_loader, criterion, optimizer):
         train_loader (DataLoader): training dataset
     """
     model.train()
+    epoch_loss = []
     pbar = tqdm(train_loader)
     for batch_idx, (images, masks) in enumerate(pbar):
         images = Variable(images.cuda())
@@ -34,6 +35,9 @@ def train_model(model, train_loader, criterion, optimizer):
         loss.backward()
         # Update weights
         optimizer.step()
+
+        epoch_loss.append(loss.item())
+    scheduler.step(np.mean(epoch_loss))
 
 def get_loss(model, data_train, criterion):
     """

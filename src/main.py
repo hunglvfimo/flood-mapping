@@ -5,6 +5,7 @@ from PIL import Image
 
 import torch
 import torch.nn as nn
+import torch.optim as optim
 from torch.autograd import Variable
 
 from advanced_model import UNet
@@ -46,6 +47,7 @@ if __name__ == "__main__":
 
     # Optimizerd
     optimizer = torch.optim.RMSprop(model.parameters(), lr=args.lr)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, verbose=True)
 
     # Saving History to csv
     header = ['epoch', 'train loss', 'train acc', 'val loss', 'val acc']
@@ -56,7 +58,7 @@ if __name__ == "__main__":
     print("Initializing Training!")
     for i in range(args.epoch_start, args.n_epoch):
         # train the model
-        train_model(model, train_loader, criterion, optimizer)
+        train_model(model, train_loader, criterion, optimizer, scheduler)
         # Validation every 5 epoch
         if (i + 1) % args.val_interval == 0:
             train_acc, train_loss = get_loss(model, train_loader, criterion)
