@@ -64,8 +64,10 @@ class SEMDataset(Dataset):
         return image, mask
 
     def __getitem__(self, index):
-        # image = tiff.imread(self.image_paths[index])
-        image = Image.open(self.image_paths[index])
+        image = tiff.imread(self.image_paths[index])
+        # convert to PIL image
+        image = Image.fromarray(image)
+        
         mask = Image.open(self.mask_paths[index])
         
         x, y = self.transform(image, mask)
