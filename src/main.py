@@ -21,7 +21,6 @@ parser.add_argument('--epoch_start', type=int, default=0)
 parser.add_argument('--n_epoch', type=int, default=100)
 parser.add_argument('--batch_size', type=int, default=2)
 parser.add_argument('--num_workers', type=int, default=0)
-parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--val_interval', type=int, default=5)
 parser.add_argument('--save_interval', type=int, default=10)
 
