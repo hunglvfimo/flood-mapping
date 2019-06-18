@@ -31,7 +31,6 @@ def add_elastic_transform(image, alpha, sigma, pad_size=30, seed=None):
     indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1))
     return cropping(map_coordinates(image, indices, order=1).reshape(shape), 512, pad_size, pad_size), seed
 
-
 def flip(image, option_value):
     """
     Args:
@@ -55,7 +54,6 @@ def flip(image, option_value):
         # no effect
     return image
 
-
 def add_gaussian_noise(image, mean=0, std=1):
     """
     Args:
@@ -70,7 +68,6 @@ def add_gaussian_noise(image, mean=0, std=1):
     noise_img = image + gaus_noise
     image = ceil_floor_image(image)
     return noise_img
-
 
 def add_uniform_noise(image, low=-10, high=10):
     """
@@ -87,7 +84,6 @@ def add_uniform_noise(image, low=-10, high=10):
     image = ceil_floor_image(image)
     return noise_img
 
-
 def change_brightness(image, value):
     """
     Args:
@@ -101,7 +97,6 @@ def change_brightness(image, value):
     image = ceil_floor_image(image)
     return image
 
-
 def ceil_floor_image(image):
     """
     Args:
@@ -113,7 +108,6 @@ def ceil_floor_image(image):
     image[image < 0] = 0
     image = image.astype("uint8")
     return image
-
 
 def approximate_image(image):
     """
@@ -127,6 +121,14 @@ def approximate_image(image):
     image = image.astype("uint8")
     return image
 
+def convert_mask_to_grayscale(image):
+    output = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
+    
+    # Normalize mask to only 0 and 1
+    output[image[:, :, 0] == 128] = 1
+    output[image[:, :, 1] == 128] = 2
+
+    return output
 
 def normalization1(image, mean, std):
     """ Normalization using mean and std
@@ -142,7 +144,6 @@ def normalization1(image, mean, std):
 
     return image
 
-
 def normalization2(image, max, min):
     """Normalization to range of [min, max]
     Args :
@@ -153,7 +154,6 @@ def normalization2(image, max, min):
     """
     image_new = (image - np.min(image))*(max - min)/(np.max(image)-np.min(image)) + min
     return image_new
-
 
 def stride_size(image_len, crop_num, crop_size):
     """return stride size
