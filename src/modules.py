@@ -24,8 +24,6 @@ def train_model(model, train_loader, criterion, optimizer):
     for batch_idx, (images, masks) in enumerate(pbar):
         images = Variable(images.cuda())
         masks = Variable(masks.cuda())
-        
-        print(images.shape, masks.shape)
 
         outputs = model(images)
 
