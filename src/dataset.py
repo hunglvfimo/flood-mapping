@@ -36,26 +36,26 @@ class SEMDataset(Dataset):
         self.is_train = is_train
 
     def transform(self, image, mask):
-        if self.is_train:
-            # Resize
-            resize = transforms.Resize(size=(520, 520))
-            image = resize(image)
-            mask = resize(mask)
+        # if self.is_train:
+        #     # Resize
+        #     resize = transforms.Resize(size=(520, 520))
+        #     image = resize(image)
+        #     mask = resize(mask)
 
-            # Random crop
-            i, j, h, w = transforms.RandomCrop.get_params(image, output_size=(512, 512))
-            image = TF.crop(image, i, j, h, w)
-            mask = TF.crop(mask, i, j, h, w)
+        #     # Random crop
+        #     i, j, h, w = transforms.RandomCrop.get_params(image, output_size=(512, 512))
+        #     image = TF.crop(image, i, j, h, w)
+        #     mask = TF.crop(mask, i, j, h, w)
 
-            # Random horizontal flipping
-            if random.random() > 0.5:
-                image = TF.hflip(image)
-                mask = TF.hflip(mask)
+        #     # Random horizontal flipping
+        #     if random.random() > 0.5:
+        #         image = TF.hflip(image)
+        #         mask = TF.hflip(mask)
 
-            # Random vertical flipping
-            if random.random() > 0.5:
-                image = TF.vflip(image)
-                mask = TF.vflip(mask)
+        #     # Random vertical flipping
+        #     if random.random() > 0.5:
+        #         image = TF.vflip(image)
+        #         mask = TF.vflip(mask)
 
         # Transform to tensor
         image = TF.to_tensor(image)
@@ -65,9 +65,9 @@ class SEMDataset(Dataset):
 
     def __getitem__(self, index):
         image = tiff.imread(self.image_paths[index])
-        mask = Image.open(self.mask_paths[index])
+        mask = Image.open(self.mask_paths[index]).convert('L')
         
-        x, y = self.transform(image, mask)
+        x, y = self.transform(image, np.array(mask))
         return x, y
 
     def __len__(self):
