@@ -70,7 +70,7 @@ class SEMDataset(Dataset):
         
         mask = Image.open(self.mask_paths[index])
 
-        print(image.shape, mask.shape)
+        print(image.shape)
         
         x, y = self.transform(image, mask)
         return x, y
