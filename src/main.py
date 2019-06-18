@@ -1,3 +1,5 @@
+import argparse, sys
+
 import numpy as np
 from PIL import Image
 
@@ -6,13 +8,20 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 from advanced_model import UNet
-# from loss import CrossEntropyLoss
 from dataset import *
 from modules import *
 from save_history import *
 
 data_dir = os.path.join("..", "..", "..", "data", "processed", "PI_SAR2_FINE")
 history_dir = os.path.join("..", "history")
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--lr', type = float, default=0.001)
+parser.add_argument('--epoch-start', type=int, default=0)
+parser.add_argument('--n-epoch', type=int, default=100)
+parser.add_argument('--batch-size', type=int, default=2)
+parser.add_argument('--num-workers', type=int, default=0)
+args = parser.parse_args()
 
 if __name__ == "__main__":
     # Dataset begin
@@ -21,8 +30,8 @@ if __name__ == "__main__":
     # Dataset end
 
     # Dataloader begins
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=0, batch_size=2, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(dataset=val_dataset, num_workers=0, batch_size=2, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(dataset=val_dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
     # Dataloader end
 
     # Model
@@ -33,11 +42,7 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss(ignore_index=0)
 
     # Optimizerd
-    optimizer = torch.optim.RMSprop(model.parameters(), lr=0.001)
-
-    # Parameters
-    epoch_start = 0
-    epoch_end = 100
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=args.lr)
 
     # Saving History to csv
     header = ['epoch', 'train loss', 'train acc', 'val loss', 'val acc']
@@ -51,7 +56,7 @@ if __name__ == "__main__":
 
     # Train
     print("Initializing Training!")
-    for i in range(epoch_start, epoch_end):
+    for i in range(args.epoch_start, args.n_epoch):
         # train the model
         train_model(model, train_loader, criterion, optimizer)
         # Validation every 5 epoch
@@ -64,5 +69,5 @@ if __name__ == "__main__":
             values = [i+1, train_loss, train_acc, val_loss, val_acc]
             export_history(header, values, save_dir, save_file_name)
 
-            if (i + 1) % 10 == 0:  # save model every 10 epoch
-                save_models(model, model_save_dir, i + 1)
+        if (i + 1) % 10 == 0:  # save model every 10 epoch
+            save_models(model, model_save_dir, i + 1)
