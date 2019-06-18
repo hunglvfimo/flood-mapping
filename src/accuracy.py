@@ -20,15 +20,19 @@ def accuracy_check(mask, prediction):
         np_ims.append(item)
 
     compare = np.equal(np_ims[0], np_ims[1])
-    accuracy = np.sum(compare)
+    
+    mask_ignore_background = np.ones(mask.shape)
+    mask_ignore_background[mask == 0] = 0
+    
+    accuracy = np.sum(compare * mask_ignore_background)
 
-    return accuracy/len(np_ims[0].flatten())
+    return accuracy / np.sum(mask_ignore_background)
 
 def accuracy_check_for_batch(masks, predictions, batch_size):
     total_acc = 0
     for index in range(batch_size):
         total_acc += accuracy_check(masks[index], predictions[index])
-    return total_acc/batch_size
+    return total_acc / batch_size
 
 # Experimenting
 if __name__ == '__main__':

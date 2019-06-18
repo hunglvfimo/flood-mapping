@@ -43,10 +43,14 @@ def get_loss_train(model, data_train, criterion):
         with torch.no_grad():
             images = Variable(images.cuda())
             masks = Variable(masks.cuda())
+            
             outputs = model(images)
+
             loss = criterion(outputs, masks)
+            
             preds = torch.argmax(outputs, dim=1).float()
             acc = accuracy_check_for_batch(masks.cpu(), preds.cpu(), images.size()[0])
+            
             total_acc = total_acc + acc
             total_loss = total_loss + loss.cpu().item()
     return total_acc/(batch+1), total_loss/(batch + 1)
