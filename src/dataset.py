@@ -27,8 +27,8 @@ class SEMDataset(Dataset):
             option (str): decide which dataset to import
         """
         # all file names
-        self.image_paths = glob.glob(os.path.join(mask_path, "*.tiff")).sort()
-        self.mask_paths = glob.glob(os.path.join(image_path, "*.png")).sort()
+        self.image_paths = glob.glob(os.path.join(mask_path, "*")).sort()
+        self.mask_paths = glob.glob(os.path.join(image_path, "*")).sort()
         self.is_train = is_train
 
     def transform(self, image, mask):
