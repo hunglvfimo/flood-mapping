@@ -25,6 +25,8 @@ def train_model(model, train_loader, criterion, optimizer):
         images = Variable(images.cuda())
         masks = Variable(masks.cuda())
         
+        print(images.shape, masks.shape)
+
         outputs = model(images)
 
         loss = criterion(outputs, masks)

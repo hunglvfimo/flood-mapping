@@ -64,8 +64,9 @@ class SEMDataset(Dataset):
         return image, mask
 
     def __getitem__(self, index):
-        image = tiff.imread(self.image_paths[index])
-        mask = Image.open(self.mask_paths[index]).convert('L')
+        # image = tiff.imread(self.image_paths[index])
+        image = Image.open(self.image_paths[index])
+        mask = Image.open(self.mask_paths[index])
         
         x, y = self.transform(image, mask)
         return x, y
