@@ -13,7 +13,7 @@ from modules import *
 from save_history import *
 
 data_dir = os.path.join("..", "..", "..", "data", "processed", "PI_SAR2_FINE")
-history_dir = os.path.join("..", "history")
+save_dir = os.path.join("..", "..", "..", "models")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type = float, default=0.001)
@@ -46,13 +46,8 @@ if __name__ == "__main__":
 
     # Saving History to csv
     header = ['epoch', 'train loss', 'train acc', 'val loss', 'val acc']
-    save_dir = os.path.join(history_dir, "RMS")
-
+    
     save_file_name = os.path.join(save_dir, "history.csv")
-
-    # Saving images and models directories
-    model_save_dir = os.path.join(save_dir, "models")
-    image_save_path = os.path.join(save_dir, "result_images3")
 
     # Train
     print("Initializing Training!")
@@ -62,7 +57,7 @@ if __name__ == "__main__":
         # Validation every 5 epoch
         if (i + 1) % 5 == 0:
             train_acc, train_loss = get_loss_train(model, train_loader, criterion)
-            val_acc, val_loss = validate_model(model, val_loader, criterion, i + 1, True, image_save_path)
+            val_acc, val_loss = validate_model(model, val_loader, criterion, i + 1, True, save_dir)
             
             print('Epoch %d, Train loss: %.3f, Train acc: %.3f, Val loss: %.3f, Val acc: %.3f' % (i + 1, train_loss, train_acc, val_loss, val_acc))
 
@@ -70,4 +65,4 @@ if __name__ == "__main__":
             export_history(header, values, save_dir, save_file_name)
 
         if (i + 1) % 10 == 0:  # save model every 10 epoch
-            save_models(model, model_save_dir, i + 1)
+            save_models(model, save_dir, i + 1)
