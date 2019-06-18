@@ -21,6 +21,10 @@ parser.add_argument('--epoch_start', type=int, default=0)
 parser.add_argument('--n_epoch', type=int, default=100)
 parser.add_argument('--batch_size', type=int, default=2)
 parser.add_argument('--num_workers', type=int, default=0)
+parser.add_argument('--num_workers', type=int, default=0)
+parser.add_argument('--val_interval', type=int, default=5)
+parser.add_argument('--save_interval', type=int, default=10)
+
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -55,7 +59,7 @@ if __name__ == "__main__":
         # train the model
         train_model(model, train_loader, criterion, optimizer)
         # Validation every 5 epoch
-        if (i + 1) % 5 == 0:
+        if (i + 1) % args.val_interval == 0:
             train_acc, train_loss = get_loss_train(model, train_loader, criterion)
             val_acc, val_loss = validate_model(model, val_loader, criterion, i + 1, True, save_dir)
             
@@ -64,5 +68,5 @@ if __name__ == "__main__":
             values = [i+1, train_loss, train_acc, val_loss, val_acc]
             export_history(header, values, save_dir, save_file_name)
 
-        if (i + 1) % 10 == 0:  # save model every 10 epoch
+        if (i + 1) % args.save_interval == 0:  # save model every 10 epoch
             save_models(model, save_dir, i + 1)
