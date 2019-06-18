@@ -17,10 +17,10 @@ history_dir = os.path.join("..", "history")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type = float, default=0.001)
-parser.add_argument('--epoch-start', type=int, default=0)
-parser.add_argument('--n-epoch', type=int, default=100)
-parser.add_argument('--batch-size', type=int, default=2)
-parser.add_argument('--num-workers', type=int, default=0)
+parser.add_argument('--epoch_start', type=int, default=0)
+parser.add_argument('--n_epoch', type=int, default=100)
+parser.add_argument('--batch_size', type=int, default=2)
+parser.add_argument('--num_workers', type=int, default=0)
 args = parser.parse_args()
 
 if __name__ == "__main__":
