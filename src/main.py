@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     # Dataloader begins
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=0, batch_size=2, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(dataset=val_dataset, num_workers=0, batch_size=1, shuffle=False)
+    val_loader = torch.utils.data.DataLoader(dataset=val_dataset, num_workers=0, batch_size=2, shuffle=False)
     # Dataloader end
 
     # Model
@@ -54,14 +54,13 @@ if __name__ == "__main__":
     for i in range(epoch_start, epoch_end):
         # train the model
         train_model(model, train_loader, criterion, optimizer)
-        train_acc, train_loss = get_loss_train(model, train_loader, criterion)
-
-        print('Epoch', str(i + 1), 'Train loss:', train_loss, "Train acc", train_acc)
-
         # Validation every 5 epoch
         if (i + 1) % 5 == 0:
+            train_acc, train_loss = get_loss_train(model, train_loader, criterion)
             val_acc, val_loss = validate_model(model, val_loader, criterion, i + 1, True, image_save_path)
-            print('Val loss:', val_loss, "val acc:", val_acc)
+            
+            print('Epoch %d, Train loss: %.3f, Train acc: %.3f, Val loss: %.3f, Val acc: %.3f' % (i + 1, train_loss, train_acc, val_loss, val_acc))
+
             values = [i+1, train_loss, train_acc, val_loss, val_acc]
             export_history(header, values, save_dir, save_file_name)
 

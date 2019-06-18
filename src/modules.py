@@ -4,28 +4,31 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from dataset import *
-import torch.nn as nn
-from accuracy import accuracy_check, accuracy_check_for_batch
-import csv
 import os
+import csv
+from tqdm import tqdm
 
+import torch.nn as nn
 
-def train_model(model, data_train, criterion, optimizer):
+from accuracy import accuracy_check, accuracy_check_for_batch
+
+def train_model(model, train_loader, criterion, optimizer):
     """Train the model and report validation error with training error
     Args:
         model: the model to be trained
         criterion: loss function
-        data_train (DataLoader): training dataset
+        train_loader (DataLoader): training dataset
     """
     model.train()
-    for batch, (images, masks) in enumerate(data_train):
+    pbar = tqdm(train_loader)
+    for batch_idx, (images, masks) in enumerate(pbar):
         images = Variable(images.cuda())
         masks = Variable(masks.cuda())
         
         outputs = model(images)
 
-        # print(masks.shape, outputs.shape)
         loss = criterion(outputs, masks)
+        pbar.set_description("%.3f" % loss.item())
 
         optimizer.zero_grad()
         loss.backward()
