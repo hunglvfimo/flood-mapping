@@ -12,24 +12,37 @@ import torch.nn as nn
 
 from accuracy import accuracy_check, accuracy_check_for_batch
 
-def train_model(model, train_loader, criterion, optimizer, scheduler):
+def train_model(model, train_loader, criterion, optimizer, scheduler, ignore_index=0, keep_rate=1.0):
     """Train the model and report validation error with training error
     Args:
         model: the model to be trained
         criterion: loss function
         train_loader (DataLoader): training dataset
-    """
+    """    
     model.train()
     epoch_loss = []
     pbar = tqdm(train_loader)
-    for batch_idx, (images, masks) in enumerate(pbar):
-        images = Variable(images.cuda())
-        masks = Variable(masks.cuda())
+    for batch_idx, (images, labels) in enumerate(pbar):
+        images = images.cuda()
+        labels = labels.cuda()
 
         outputs = model(images)
 
-        loss = criterion(outputs, masks)
-        pbar.set_description("%.3f" % loss.item())
+        # calculate loss and remove loss of ignore_index
+        loss = criterion(outputs, labels)
+        # loss[labels == ignore_index] = 0
+        # loss = loss.view(-1)
+        # loss = loss[loss != 0]
+        # # select samples with higher confidence (lower loss) for training
+        # if keep_rate < 1.0:
+        #     loss_ind_sorted = np.argsort(loss.cpu().data.numpy())
+        #     loss_ind_sorted = torch.LongTensor(loss_ind_sorted.copy()).cuda()
+        #     num_keep = int(keep_rate * len(loss))
+
+        #     loss = loss[loss_ind_sorted[:num_keep]]
+
+        # loss = loss.mean()
+        pbar.set_description("[kr=%.2f]%.3f" % (keep_rate, loss.item()))
 
         optimizer.zero_grad()
         loss.backward()
@@ -44,7 +57,6 @@ def get_loss(model, data_train, criterion):
         Calculate loss over train set
     """
     model.eval()
-    total_acc = 0
     total_loss = 0
     for batch, (images, masks) in enumerate(data_train):
         with torch.no_grad():
@@ -54,50 +66,17 @@ def get_loss(model, data_train, criterion):
             outputs = model(images)
 
             loss = criterion(outputs, masks)
-            
-            preds = torch.argmax(outputs, dim=1).float()
-            acc = accuracy_check_for_batch(masks.cpu(), preds.cpu(), images.size()[0])
-            
-            total_acc = total_acc + acc
+            loss = loss.mean()
+                        
             total_loss = total_loss + loss.cpu().item()
-    return total_acc/(batch+1), total_loss/(batch + 1)
+    return total_loss / (batch + 1)
 
-def validate_model(model, data_val, criterion, epoch, make_prediction=True, save_folder_name='prediction'):
-    """
-        Validation run
-    """
-    # calculating validation loss
-    total_val_loss = 0
-    total_val_acc = 0
-    for batch, (images_v, masks_v, original_msk) in enumerate(data_val):
-        stacked_img = torch.Tensor([]).cuda()
-        for index in range(images_v.size()[1]):
-            with torch.no_grad():
-                image_v = Variable(images_v[:, index, :, :].unsqueeze(0).cuda())
-                mask_v = Variable(masks_v[:, index, :, :].squeeze(1).cuda())
-                # print(image_v.shape, mask_v.shape)
-                output_v = model(image_v)
-                total_val_loss = total_val_loss + criterion(output_v, mask_v).cpu().item()
-                # print('out', output_v.shape)
-                output_v = torch.argmax(output_v, dim=1).float()
-                stacked_img = torch.cat((stacked_img, output_v))
-        if make_prediction:
-            im_name = batch  # TODO: Change this to real image name so we know
-            pred_msk = save_prediction_image(stacked_img, im_name, epoch, save_folder_name)
-            acc_val = accuracy_check(original_msk, pred_msk)
-            total_val_acc = total_val_acc + acc_val
-
-    return total_val_acc/(batch + 1), total_val_loss/((batch + 1)*4)
-
-def test_model(model_path, data_test, epoch, save_folder_name='prediction'):
-    """
-        Test run
-    """
+def test_model(model_path, data_loader, epoch, save_folder_name='prediction'):
     model = torch.load(model_path)
-    model = torch.nn.DataParallel(model, device_ids=list(
-        range(torch.cuda.device_count()))).cuda()
+    model = model.cuda()
+
     model.eval()
-    for batch, (images_t) in enumerate(data_test):
+    for batch, (images_t) in enumerate(data_loader):
         stacked_img = torch.Tensor([]).cuda()
         for index in range(images_t.size()[1]):
             with torch.no_grad():

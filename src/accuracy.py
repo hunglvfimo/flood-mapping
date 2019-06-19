@@ -6,7 +6,6 @@ import numpy as np
 from PIL import Image
 import torch
 
-
 def accuracy_check(mask, prediction):
     ims = [mask, prediction]
     np_ims = []
