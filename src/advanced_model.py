@@ -12,9 +12,7 @@ def double_conv(in_channels, out_channels):
         nn.ReLU(inplace=True)
     )   
 
-
 class UNet(nn.Module):
-
     def __init__(self, n_class):
         super().__init__()
                 
@@ -67,4 +65,4 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     debug_model = UNet(n_class=3).to(device)
 
-    summary(debug_model, (3, 512, 512))
+    summary(debug_model, (7, 512, 512))

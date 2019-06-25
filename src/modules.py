@@ -12,7 +12,7 @@ import torch.nn as nn
 
 from accuracy import accuracy_check, accuracy_check_for_batch
 
-def train_model(model, train_loader, criterion, optimizer, scheduler, ignore_index=0, keep_rate=1.0):
+def train_model(model, train_loader, criterion, optimizer, scheduler, keep_rate=1.0):
     """Train the model and report validation error with training error
     Args:
         model: the model to be trained
@@ -42,7 +42,7 @@ def train_model(model, train_loader, criterion, optimizer, scheduler, ignore_ind
         #     loss = loss[loss_ind_sorted[:num_keep]]
 
         # loss = loss.mean()
-        pbar.set_description("[kr=%.2f]%.3f" % (keep_rate, loss.item()))
+        # pbar.set_description("[kr=%.2f]%.3f" % (keep_rate, loss.item()))
 
         optimizer.zero_grad()
         loss.backward()
@@ -58,17 +58,16 @@ def get_loss(model, data_train, criterion):
     """
     model.eval()
     total_loss = 0
-    for batch, (images, masks) in enumerate(data_train):
+    for batch, (images, labels) in enumerate(data_train):
         with torch.no_grad():
-            images = Variable(images.cuda())
-            masks = Variable(masks.cuda())
+            images = images.cuda()
+            labels = labels.cuda()
             
             outputs = model(images)
 
-            loss = criterion(outputs, masks)
-            loss = loss.mean()
+            loss = criterion(outputs, labels)
                         
-            total_loss = total_loss + loss.cpu().item()
+            total_loss += loss.item()
     return total_loss / (batch + 1)
 
 def test_model(model_path, data_loader, epoch, save_folder_name='prediction'):
