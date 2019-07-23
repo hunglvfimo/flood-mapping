@@ -10,8 +10,9 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from advanced_model import UNet
-from dataset import *
+from model import UNet
+from transform import random_transform_generator
+from dataset import SEMDataset
 from modules import *
 from save_history import *
 from params import *
@@ -34,6 +35,19 @@ parser.add_argument('--save_interval', type=int, default=10)
 args = parser.parse_args()
 
 def train():
+    transform_generator = random_transform_generator(
+            min_rotation=-0.1,
+            max_rotation=0.1,
+            min_translation=(-0.1, -0.1),
+            max_translation=(0.1, 0.1),
+            min_shear=-0.1,
+            max_shear=0.1,
+            min_scaling=(0.9, 0.9),
+            max_scaling=(1.1, 1.1),
+            flip_x_chance=0.5,
+            flip_y_chance=0.5,
+        )
+
     # Dataset begin
     train_dataset   = SEMDataset(os.path.join(data_dir, "train", "img"), os.path.join(data_dir, "train", "label"), stage="train")
     val_dataset     = SEMDataset(os.path.join(data_dir, "val", "img"), os.path.join(data_dir, "val", "label"), stage="val")
@@ -54,8 +68,8 @@ def train():
     criterion = nn.CrossEntropyLoss(ignore_index=0)
 
     # Optimizerd
-    optimizer = torch.optim.RMSprop(model.parameters(), lr=args.lr)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, verbose=True)
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=0.0005)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10, verbose=True)
 
     # Saving History to csv
     header = ['epoch', 'train loss', 'train acc', 'val loss', 'val acc']
