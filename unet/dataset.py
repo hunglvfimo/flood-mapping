@@ -17,7 +17,7 @@ from pre_processing import *
 from params import *
 
 class SEMDataset(Dataset):
-    def __init__(self, image_dir, label_dir, stage="train", n_batches_factor=2 ):
+    def __init__(self, image_dir, label_dir, stage="train", n_batches_factor=2):
         """
         Args:
             image_path (str): the path where the image is located

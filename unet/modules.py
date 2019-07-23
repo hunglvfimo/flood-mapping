@@ -1,16 +1,16 @@
 import numpy as np
 from PIL import Image
+
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
+
 from dataset import *
 import os
 import csv
+
 from tqdm import tqdm
 
-import torch.nn as nn
 
-from accuracy import accuracy_check, accuracy_check_for_batch
 
 def train_model(model, train_loader, criterion, optimizer, scheduler, keep_rate=1.0):
     """Train the model and report validation error with training error
@@ -30,19 +30,6 @@ def train_model(model, train_loader, criterion, optimizer, scheduler, keep_rate=
 
         # calculate loss and remove loss of ignore_index
         loss = criterion(outputs, labels)
-        # loss[labels == ignore_index] = 0
-        # loss = loss.view(-1)
-        # loss = loss[loss != 0]
-        # # select samples with higher confidence (lower loss) for training
-        # if keep_rate < 1.0:
-        #     loss_ind_sorted = np.argsort(loss.cpu().data.numpy())
-        #     loss_ind_sorted = torch.LongTensor(loss_ind_sorted.copy()).cuda()
-        #     num_keep = int(keep_rate * len(loss))
-
-        #     loss = loss[loss_ind_sorted[:num_keep]]
-
-        # loss = loss.mean()
-        # pbar.set_description("[kr=%.2f]%.3f" % (keep_rate, loss.item()))
 
         optimizer.zero_grad()
         loss.backward()
@@ -52,13 +39,13 @@ def train_model(model, train_loader, criterion, optimizer, scheduler, keep_rate=
         epoch_loss.append(loss.item())
     scheduler.step(np.mean(epoch_loss))
 
-def get_loss(model, data_train, criterion):
+def get_loss(model, data, criterion):
     """
         Calculate loss over train set
     """
     model.eval()
     total_loss = 0
-    for batch, (images, labels) in enumerate(data_train):
+    for batch, (images, labels) in enumerate(data):
         with torch.no_grad():
             images = images.cuda()
             labels = labels.cuda()

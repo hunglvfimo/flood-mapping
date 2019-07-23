@@ -35,13 +35,13 @@ args = parser.parse_args()
 
 def train():
     # Dataset begin
-    train_dataset = SEMDataset(os.path.join(data_dir, "train", "img"), os.path.join(data_dir, "train", "label"), stage="train")
-    val_dataset = SEMDataset(os.path.join(data_dir, "val", "img"), os.path.join(data_dir, "val", "label"), stage="val")
+    train_dataset   = SEMDataset(os.path.join(data_dir, "train", "img"), os.path.join(data_dir, "train", "label"), stage="train")
+    val_dataset     = SEMDataset(os.path.join(data_dir, "val", "img"), os.path.join(data_dir, "val", "label"), stage="val")
     # Dataset end
 
     # Dataloader begins
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(dataset=val_dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
+    train_loader    = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True)
+    val_loader      = torch.utils.data.DataLoader(dataset=val_dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
     # Dataloader end
 
     # Model
@@ -63,15 +63,14 @@ def train():
     save_file_name = os.path.join(args.save_dir, "history.csv")
 
     rate_schedule = np.ones(args.n_epoch)
-    # rate_schedule[:args.n_gradual] = np.linspace(1.0, args.keep_rate, args.n_gradual)
-
     for i in range(args.n_epoch):
         # train the model
         train_model(model, train_loader, criterion, optimizer, scheduler, keep_rate=rate_schedule[i])
+        
         # Validation every 5 epoch
         if (i + 1) % args.val_interval == 0:
-            train_loss = get_loss(model, train_loader, criterion)
-            val_loss = get_loss(model, val_loader, criterion)
+            train_loss  = get_loss(model, train_loader, criterion)
+            val_loss    = get_loss(model, val_loader, criterion)
             
             print('Epoch %d, Train loss: %.3f, Val loss: %.3f' % (i + 1, train_loss, val_loss))
 
