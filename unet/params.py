@@ -1,3 +1,3 @@
-import os
-
-data_dir = os.path.join("..", "..", "..", "data", "processed", "PI_SAR2_FINE", "int")
+import numpy as np
+MEAN 	= np.zeros(20)
+STD 	= np.ones(20)

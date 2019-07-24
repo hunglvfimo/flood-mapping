@@ -35,6 +35,7 @@ parser.add_argument('--save_interval', type=int, default=10)
 args = parser.parse_args()
 
 def train():
+    # transform generator
     transform_generator = random_transform_generator(
             min_rotation=-0.1,
             max_rotation=0.1,
@@ -48,15 +49,16 @@ def train():
             flip_y_chance=0.5,
         )
 
-    # Dataset begin
-    train_dataset   = SEMDataset(os.path.join(data_dir, "train", "img"), os.path.join(data_dir, "train", "label"), stage="train")
-    val_dataset     = SEMDataset(os.path.join(data_dir, "val", "img"), os.path.join(data_dir, "val", "label"), stage="val")
-    # Dataset end
+    # create custome dataset
+    train_dataset   = SEMDataset(os.path.join(args.data_dir, "train", "img"), 
+                            os.path.join(args.data_dir, "train", "label"), 
+                            transform_generator=transform_generator)
+    val_dataset     = SEMDataset(os.path.join(args.data_dir, "val", "img"), 
+                            os.path.join(args.data_dir, "val", "label"))
 
-    # Dataloader begins
+    # Dataloader
     train_loader    = torch.utils.data.DataLoader(dataset=train_dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True)
     val_loader      = torch.utils.data.DataLoader(dataset=val_dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
-    # Dataloader end
 
     # Model
     model = UNet(n_class=3)

@@ -1,6 +1,8 @@
 import numpy as np
 from random import randint
 
+import cv2
+
 from transform import change_transform_origin
 from params import STD, MEAN
 
