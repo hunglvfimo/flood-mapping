@@ -25,8 +25,6 @@ parser.add_argument('--data_dir', type=str)
 parser.add_argument('--save_dir', type=str)
 parser.add_argument('--lr', type = float, default=0.001)
 parser.add_argument('--n_epoch', type=int, default=100)
-parser.add_argument('--keep_rate', type = float, default=0.5)
-parser.add_argument('--n_gradual', type=int, default=50)
 parser.add_argument('--batch_size', type=int, default=2)
 parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--val_interval', type=int, default=5)
@@ -61,7 +59,7 @@ def train():
     val_loader      = torch.utils.data.DataLoader(dataset=val_dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
 
     # Model
-    model = UNet(n_class=3)
+    model = UNet(n_channel=11, n_class=3)
     if args.snapshot:
         model = torch.load(args.snapshot)
     model = model.cuda()
