@@ -142,7 +142,7 @@ def predict():
     dataset     = SEMDataset(os.path.join(args.val_dir, "img"), 
                         os.path.join(args.val_dir, "label"), 
                         transform_generator=None)
-    loader      = torch.utils.data.DataLoader(dataset=dataset, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
+    loader      = torch.utils.data.DataLoader(dataset=dataset, num_workers=args.num_workers, batch_size=1, shuffle=False)
 
     model = torch.load(args.snapshot)
     model = model.cuda()
@@ -151,22 +151,23 @@ def predict():
     with torch.no_grad():
         pbar = tqdm(loader)
         for batch_idx, (images, labels) in enumerate(pbar):
-            images = images.cuda()
-            labels = labels.numpy()
+            images  = images.cuda()
+
+            masks   = torch.max(labels, dim=1)[0]
+            masks   = masks.numpy() # batch_size * H * W
             
-            probs           = F.softmax(model.forward(images)).data.cpu().numpy()
-            
-            preds           = np.argmax(probs, axis=1).astype(np.uint8)
-            probs           = np.max(probs, axis=1)
+            probs   = model.forward(images).data.cpu().numpy() # batch_size * C * H * W
+            preds   = np.argmax(probs, axis=1).astype(np.uint8) + 1 # batch_size * H * W
+            probs   = np.max(probs, axis=1) # batch_size * H * W
 
             high_prob_masks = (probs > 0.9).astype(np.uint8)
             preds           = preds * high_prob_masks
-            for i, pred in enumerate(preds):
-                no_value_mask   = dataset.get_mask(batch_idx * args.batch_size + i)
-                pred            = pred * no_value_mask
-                label           = Image.fromarray(pred)
+
+            for (pred, mask) in zip(preds, masks):
+                pred        = pred * mask
+                label       = Image.fromarray(pred)
                 
-                basename        = dataset.get_basename(batch_idx * args.batch_size + i)
+                basename    = dataset.get_basename(batch_idx)
                 label.save(os.path.join(args.save_dir, "%s.png" % basename))
             
 if __name__ == "__main__":
