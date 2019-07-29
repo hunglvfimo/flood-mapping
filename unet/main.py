@@ -159,7 +159,7 @@ def predict():
 
             high_prob_masks = (probs > 0.9).astype(np.uint8)
             preds           = preds * high_prob_masks # 1 * H * W
-            preds           = preds[0, ...] # H x W
+            pred            = preds[0, ...] # H x W
 
             no_value_mask   = dataset.get_mask(batch_idx) # H x W
 
