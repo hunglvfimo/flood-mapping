@@ -20,7 +20,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--train', help='Multualy exclusive with --predict.', action='store_true')
 parser.add_argument('--predict', help='Multualy exclusive with --train.', action='store_true')
 parser.add_argument('--transform', help='', action='store_true')
-parser.add_argument('--model_depth', type=int, default=5)
 parser.add_argument('--loss_fn', type=str, default="bce")
 parser.add_argument('--snapshot', type=str)
 parser.add_argument('--train_dir', type=str)
@@ -98,8 +97,11 @@ def train():
     # Saving History to csv
     header = ['epoch', 'train_loss', 'val_acc']
     
-    save_file_name = os.path.join(args.save_dir, "history.csv")
+    save_dir = os.path.join(args.save_dir, args.loss_fn)
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
 
+    save_file_name = os.path.join(save_dir, "history.csv")
     for i in range(args.init_epoch, args.init_epoch + args.n_epoch):
         # train the model
         train_loss = train_model(model, train_loader, criterion, optimizer, scheduler)
@@ -110,10 +112,10 @@ def train():
             print('Epoch %d, Train loss: %.5f, Val acc: %.4f' % (i + 1, train_loss, val_acc))
 
             values  = [i + 1, train_loss, val_acc]
-            export_history(header, values, args.save_dir, save_file_name)
+            export_history(header, values, save_dir, save_file_name)
 
         if (i + 1) % args.save_interval == 0:  # save model every save_interval epoch
-            save_models(model, args.save_dir, i + 1)
+            save_models(model, save_dir, i + 1)
 
 def predict():
     if not os.path.exists(args.save_dir):
