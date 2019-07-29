@@ -31,7 +31,7 @@ class UNet(nn.Module):
         self.dconv_up2  = double_conv(128 + 256, 128)
         self.dconv_up1  = double_conv(128 + 64, 64)
         
-        self.dropout    = nn.Dropout(0.5)
+        # self.dropout    = nn.Dropout(0.5)
         self.conv_last  = nn.Conv2d(64, n_classes, 1)
         
     def forward(self, x):
@@ -59,7 +59,7 @@ class UNet(nn.Module):
         
         x = self.dconv_up1(x)
         
-        x = self.dropout(x)
+        # x = self.dropout(x)
         out = self.conv_last(x)
         
         # return out
