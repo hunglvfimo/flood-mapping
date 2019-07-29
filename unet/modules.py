@@ -39,7 +39,7 @@ def train_model(model, data_loader, criterion, optimizer, scheduler):
         loss.backward()
         optimizer.step()
 
-        # pbar.set_description("%.3f" % loss.item())
+        pbar.set_description("%.3f" % loss.item())
         epoch_loss.append(loss.item())
         
     scheduler.step(np.mean(epoch_loss))
