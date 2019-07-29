@@ -52,7 +52,10 @@ def train():
                 flip_y_chance=0.5,
             )
     else:
-        transform_generator = None
+        transform_generator = random_transform_generator(
+                flip_x_chance=0.5,
+                flip_y_chance=0.5,
+            )
 
     # create custome dataset
     train_dataset   = SEMDataset(os.path.join(args.train_dir, "img"), 
