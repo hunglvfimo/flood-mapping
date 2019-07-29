@@ -27,13 +27,6 @@ def train_model(model, data_loader, criterion, optimizer, scheduler):
 
         # calculate loss and remove loss of ignore_index
         loss    = criterion(outputs, labels)
-        loss    = torch.sum(loss, dim=1)
-
-        labels  = torch.max(labels, dim=1)[0]
-        
-        loss    = loss[labels > 0]
-
-        loss    = loss.mean()
 
         optimizer.zero_grad()
         loss.backward()

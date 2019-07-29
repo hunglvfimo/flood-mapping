@@ -14,12 +14,14 @@ from transform import random_transform_generator
 from dataset import SEMDataset
 from modules import *
 from save_history import *
+from loss import masked_bce_loss, masked_dice_loss, masked_dbce_loss
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--train', help='Multualy exclusive with --predict.', action='store_true')
 parser.add_argument('--predict', help='Multualy exclusive with --train.', action='store_true')
 parser.add_argument('--transform', help='', action='store_true')
 parser.add_argument('--model_depth', type=int, default=5)
+parser.add_argument('--loss_fn', type=str, default="bce")
 parser.add_argument('--snapshot', type=str)
 parser.add_argument('--train_dir', type=str)
 parser.add_argument('--val_dir', type=str)
@@ -80,8 +82,14 @@ def train():
     model = model.cuda()
 
     # Loss function
-    # criterion = nn.CrossEntropyLoss(ignore_index=0)
-    criterion   = nn.BCEWithLogitsLoss(reduction='none')
+    if args.loss_fn == "bce":
+        criterion   = masked_bce_loss
+    elif args.loss_fn == "dice":
+        criterion   = masked_dice_loss
+    elif args.loss_fn == 'dbce':
+        criterion   = masked_dbce_loss
+    else:
+        RaiseValueError("%s loss function is not supported" % args.loss_fn)
 
     # Optimizerd
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
