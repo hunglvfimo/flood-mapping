@@ -18,6 +18,7 @@ from save_history import *
 parser = argparse.ArgumentParser()
 parser.add_argument('--train', help='Multualy exclusive with --predict.', action='store_true')
 parser.add_argument('--predict', help='Multualy exclusive with --train.', action='store_true')
+parser.add_argument('--transform', help='', action='store_true')
 parser.add_argument('--model_depth', type=int, default=5)
 parser.add_argument('--snapshot', type=str)
 parser.add_argument('--train_dir', type=str)
@@ -37,18 +38,21 @@ args = parser.parse_args()
 
 def train():
     # transform generator
-    transform_generator = random_transform_generator(
-            min_rotation=-0.1,
-            max_rotation=0.1,
-            min_translation=(-0.1, -0.1),
-            max_translation=(0.1, 0.1),
-            min_shear=-0.1,
-            max_shear=0.1,
-            min_scaling=(0.9, 0.9),
-            max_scaling=(1.1, 1.1),
-            flip_x_chance=0.5,
-            flip_y_chance=0.5,
-        )
+    if args.transform:
+        transform_generator = random_transform_generator(
+                min_rotation=-0.1,
+                max_rotation=0.1,
+                min_translation=(-0.1, -0.1),
+                max_translation=(0.1, 0.1),
+                min_shear=-0.1,
+                max_shear=0.1,
+                min_scaling=(0.9, 0.9),
+                max_scaling=(1.1, 1.1),
+                flip_x_chance=0.5,
+                flip_y_chance=0.5,
+            )
+    else:
+        transform_generator = None
 
     # create custome dataset
     train_dataset   = SEMDataset(os.path.join(args.train_dir, "img"), 

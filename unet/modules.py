@@ -17,8 +17,8 @@ def train_model(model, data_loader, criterion, optimizer, scheduler):
     """    
     model.train()
     epoch_loss = []
+    
     pbar = tqdm(data_loader)
-
     for batch_idx, (images, labels) in enumerate(pbar):
         images = images.cuda()
         labels = labels.cuda()
@@ -31,15 +31,15 @@ def train_model(model, data_loader, criterion, optimizer, scheduler):
 
         labels  = torch.max(labels, dim=1)[0]
         
-        loss    = loss * labels
+        loss    = loss[labels > 0]
 
-        loss = loss.mean()
+        loss    = loss.mean()
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        pbar.set_description("%.3f" % loss.item())
+        # pbar.set_description("%.3f" % loss.item())
         epoch_loss.append(loss.item())
         
     scheduler.step(np.mean(epoch_loss))
