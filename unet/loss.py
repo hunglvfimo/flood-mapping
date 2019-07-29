@@ -35,7 +35,7 @@ def masked_dice_loss(outputs, labels):
 
     return 1 - (2. * intersection.sum() + smooth) / (u_outputs.sum() + u_labels.sum() + smooth)
 
-def masked_dbce_loss(outputs, labels, bce_weigth=0.5):
+def masked_dbce_loss(outputs, labels):
     """Dice loss + BCE loss"""
     # mask for labeled pixel
     # mask        = torch.max(labels, dim=1)[0] # Batch_size x Height x Width
@@ -43,5 +43,5 @@ def masked_dbce_loss(outputs, labels, bce_weigth=0.5):
     bce_loss    = masked_bce_loss(outputs, labels)
     dice_loss   = masked_dice_loss(outputs, labels)
 
-    return bce_weigth * bce_loss + (1 - bce_weigth) * dice_loss
+    return bce_loss + 2 * dice_loss
 
