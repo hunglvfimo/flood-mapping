@@ -52,8 +52,11 @@ def evaluate_model(model, data_loader, criterion, metric=False):
             labels      = labels.cuda()
             
             outputs     = model(images)
-            loss        = criterion(outputs, labels)
-            total_loss.append(loss.item())
+            if criterion is not None:
+                loss    = criterion(outputs, labels)
+                total_loss.append(loss.item())
+            else:
+                total_loss.append(0)
 
             outputs     = outputs.cpu().numpy()
             predicted   = np.argmax(outputs, axis=1)

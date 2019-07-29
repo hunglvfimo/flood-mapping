@@ -19,6 +19,7 @@ from loss import masked_bce_loss, masked_dice_loss, masked_dbce_loss
 parser = argparse.ArgumentParser()
 parser.add_argument('--train', help='Multualy exclusive with --predict.', action='store_true')
 parser.add_argument('--predict', help='Multualy exclusive with --train.', action='store_true')
+parser.add_argument('--evaluate', help='Multualy exclusive with --train.', action='store_true')
 parser.add_argument('--transform', help='', action='store_true')
 parser.add_argument('--loss_fn', type=str, default="bce")
 parser.add_argument('--snapshot', type=str)
@@ -33,7 +34,6 @@ parser.add_argument('--batch_size', type=int, default=2)
 parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--val_interval', type=int, default=5)
 parser.add_argument('--save_interval', type=int, default=10)
-
 
 args = parser.parse_args()
 
@@ -117,6 +117,24 @@ def train():
         if (i + 1) % args.save_interval == 0:  # save model every save_interval epoch
             save_models(model, save_dir, i + 1)
 
+def evaluate():
+    if args.snapshot is None:
+        RaiseValueError("--snapshot must be provided!")
+
+    val_dataset     = SEMDataset(os.path.join(args.val_dir, "img"), 
+                            os.path.join(args.val_dir, "label"))
+    val_loader      = torch.utils.data.DataLoader(dataset=val_dataset, 
+                                                num_workers=args.num_workers, 
+                                                batch_size=args.batch_size, 
+                                                shuffle=False)
+    from model import UNet
+    model = UNet(in_channels=11, n_classes=2)
+    model = torch.load(args.snapshot)
+    model = model.cuda()
+
+    _, val_acc = evaluate_model(model, val_loader, None, metric=True)
+    print('Overall acc: %.4f' % val_acc)
+
 def predict():
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
@@ -156,5 +174,7 @@ if __name__ == "__main__":
         train()
     elif args.predict:
         predict()
+    elif args.evaluate:
+        evaluate()
     else:
-        print("Please chose --train, --predict. Mutualy exclusive!")
+        print("Please chose --train, --predict, --evaluate. Mutualy exclusive!")
