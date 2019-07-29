@@ -152,23 +152,22 @@ def predict():
         pbar = tqdm(loader)
         for batch_idx, (images, labels) in enumerate(pbar):
             images  = images.cuda()
-
-            masks   = torch.max(labels, dim=1)[0]
-            masks   = masks.numpy() # batch_size * H * W
             
-            probs   = model.forward(images).data.cpu().numpy() # batch_size * C * H * W
-            preds   = np.argmax(probs, axis=1).astype(np.uint8) + 1 # batch_size * H * W
-            probs   = np.max(probs, axis=1) # batch_size * H * W
+            probs   = model.forward(images).data.cpu().numpy() # 1 * C * H * W
+            preds   = np.argmax(probs, axis=1).astype(np.uint8) + 1 # 1 * H * W
+            probs   = np.max(probs, axis=1) # 1 * H * W
 
             high_prob_masks = (probs > 0.9).astype(np.uint8)
-            preds           = preds * high_prob_masks
+            preds           = preds * high_prob_masks # 1 * H * W
+            preds           = preds[0, ...] # H x W
 
-            for (pred, mask) in zip(preds, masks):
-                pred        = pred * mask
-                label       = Image.fromarray(pred).convert("L")
-                
-                basename    = dataset.get_basename(batch_idx)
-                label.save(os.path.join(args.save_dir, "%s.png" % basename))
+            no_value_mask   = dataset.get_mask(batch_idx) # H x W
+
+            pred            = pred * no_value_mask
+            label           = Image.fromarray(pred).convert("L")
+            
+            basename        = dataset.get_basename(batch_idx)
+            label.save(os.path.join(args.save_dir, "%s.png" % basename))
             
 if __name__ == "__main__":
     if args.train:
