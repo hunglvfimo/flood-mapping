@@ -58,6 +58,12 @@ class SEMDataset(Dataset):
         basename = os.path.basename(self.image_paths[index]).split(".")[0]
         return basename
 
+    def get_mask(self, index):
+        image   = tiff.imread(self.image_paths[index])
+        mask    = np.ones((image.shape[0], image.shape[1]), dtype=np.uint8)
+        mask[image[..., 0] == 0] = 0
+        return mask
+
     def __getitem__(self, index):
         image = tiff.imread(self.image_paths[index])
         
