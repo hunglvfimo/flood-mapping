@@ -23,9 +23,10 @@ def plotloss(csvfile):
     loss_values = pd.read_csv(csvfile)
 
     # Initiation
-    epoch = loss_values.iloc[:, 0]
-    tr_loss = loss_values.iloc[:, 1]
-    val_acc = np.asarray(loss_values.iloc[:, 2])
+    epoch       = np.asarray(loss_values.iloc[:, 0])
+    tr_loss     = np.asarray(loss_values.iloc[:, 1])
+    val_loss    = np.asarray(loss_values.iloc[:, 2])
+    val_acc     = np.asarray(loss_values.iloc[:, 3])
 
     fig, ax1 = plt.subplots(figsize=(8, 6))
     ax2 = ax1.twinx()
@@ -38,6 +39,8 @@ def plotloss(csvfile):
     # Plot valid/train losses
     ax1.plot(epoch, tr_loss, linewidth=2,
              ls='--', color='#c92508', label='Train loss')
+    ax1.plot(epoch, val_loss, linewidth=2,
+             ls='--', color='#2348ff', label='Val loss')
     ax1.spines['left'].set_color('#f23d1d')
     # Coloring the ticks
     for label in ax1.get_yticklabels():

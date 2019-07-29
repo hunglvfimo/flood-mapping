@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-eps = 1e-7
-
 def masked_bce_loss(outputs, labels):
     # mask for labeled pixel
     mask    = torch.max(labels, dim=1)[0]
@@ -17,6 +15,8 @@ def masked_bce_loss(outputs, labels):
     return loss
 
 def masked_dice_loss(outputs, labels):
+    smooth = 1
+
     # mask for labeled pixel
     mask            = torch.max(labels, dim=1)[0] # Batch_size x Height x Width
 
@@ -33,12 +33,12 @@ def masked_dice_loss(outputs, labels):
     u_outputs       = u_outputs[mask > 0]
     u_labels        = u_labels[mask > 0]
 
-    return 1 - (2. * intersection.sum() + eps) / (u_outputs.sum() + u_labels.sum() + eps)
+    return 1 - (2. * intersection.sum() + smooth) / (u_outputs.sum() + u_labels.sum() + smooth)
 
 def masked_dbce_loss(outputs, labels, bce_weigth=0.5):
     """Dice loss + BCE loss"""
     # mask for labeled pixel
-    mask            = torch.max(labels, dim=1)[0] # Batch_size x Height x Width
+    # mask        = torch.max(labels, dim=1)[0] # Batch_size x Height x Width
 
     bce_loss    = masked_bce_loss(outputs, labels)
     dice_loss   = masked_dice_loss(outputs, labels)
