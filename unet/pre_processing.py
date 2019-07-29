@@ -35,8 +35,8 @@ class TransformParameters:
     """
     def __init__(
         self,
-        fill_mode            = 'nearest',
-        interpolation        = 'linear',
+        fill_mode            = 'constant',
+        interpolation        = 'nearest',
         cval                 = 0,
         relative_translation = True,
     ):

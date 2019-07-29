@@ -2,6 +2,7 @@ from torchsummary import summary
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torchvision import models
 
 def double_conv(in_channels, out_channels):
@@ -9,27 +10,29 @@ def double_conv(in_channels, out_channels):
         nn.Conv2d(in_channels, out_channels, 3, padding=1),
         nn.ReLU(inplace=True),
         nn.Conv2d(out_channels, out_channels, 3, padding=1),
-        nn.ReLU(inplace=True)
+        nn.ReLU(inplace=True),
+        nn.BatchNorm2d(out_channels)
     )   
 
 class UNet(nn.Module):
-    def __init__(self, n_channel, n_class):
+    def __init__(self, in_channels, n_classes):
         super().__init__()
                 
-        self.dconv_down1 = double_conv(n_channel, 64)
+        self.dconv_down1 = double_conv(in_channels, 64)
         self.dconv_down2 = double_conv(64, 128)
         self.dconv_down3 = double_conv(128, 256)
-        self.dconv_down4 = double_conv(256, 512)        
+        self.dconv_down4 = double_conv(256, 512)   
 
-        self.maxpool = nn.MaxPool2d(2)
-        self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)        
+        self.maxpool    = nn.MaxPool2d(2)
         
-        self.dconv_up3 = double_conv(256 + 512, 256)
-        self.dconv_up2 = double_conv(128 + 256, 128)
-        self.dconv_up1 = double_conv(128 + 64, 64)
+        self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+
+        self.dconv_up3  = double_conv(256 + 512, 256)
+        self.dconv_up2  = double_conv(128 + 256, 128)
+        self.dconv_up1  = double_conv(128 + 64, 64)
         
-        self.conv_last = nn.Conv2d(64, n_class, 1)
-        
+        self.dropout    = nn.Dropout(0.5)
+        self.conv_last  = nn.Conv2d(64, n_classes, 1)
         
     def forward(self, x):
         conv1 = self.dconv_down1(x)
@@ -56,13 +59,13 @@ class UNet(nn.Module):
         
         x = self.dconv_up1(x)
         
+        x = self.dropout(x)
         out = self.conv_last(x)
         
         return out
 
-
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    debug_model = UNet(n_class=3).to(device)
+    debug_model = UNet(n_channel=11, n_class=3).to(device)
 
-    summary(debug_model, (7, 512, 512))
+    summary(debug_model, (11, 512, 512))

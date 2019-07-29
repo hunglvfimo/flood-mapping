@@ -50,18 +50,31 @@ class SEMDataset(Dataset):
             image = TF.to_tensor(image)
             # can not use to_tensor() for label 
             # since it will scale the data to range [0, 1]
-            label = torch.from_numpy(label).long()
+            label = torch.from_numpy(label).float()
 
         return image, label
+
+    def get_basename(self, index):
+        basename = os.path.basename(self.image_paths[index]).split(".")[0]
+        return basename
+
+    def get_mask(self, index):
+        image   = tiff.imread(self.image_paths[index])
+        mask    = np.ones((image.shape[0], image.shape[1]), dtype=np.uint8)
+        mask[image[..., 0] == 0] = 0
+        return mask
 
     def __getitem__(self, index):
         image = tiff.imread(self.image_paths[index])
         
-        label = Image.open(self.label_paths[index]).convert('L')
-        label = np.array(label)
+        mask = Image.open(self.label_paths[index]).convert('L')
+        mask = np.array(mask)
+        
+        label = np.zeros((2, ) + mask.shape)
+        for i in range(2):
+            (label[i, ...])[mask == (i + 1)] = 1
         
         image, label = self._transform(image, label)
-
         return image, label
 
     def __len__(self):
@@ -86,11 +99,11 @@ if __name__ == "__main__":
     dataset     = SEMDataset(os.path.join(data_dir, "train", "img"), 
                         os.path.join(data_dir, "train", "label"), 
                         transform_generator=transform_generator, 
-                        to_tensor=True)
+                        to_tensor=False)
 
     # check get item
-    image, label = dataset.__getitem__(4)
-    print(image.shape, label.shape)
+    for i in range(3):
+        image, label = dataset.__getitem__(22)
 
-    # tiff.imsave("image.tif", image, planarconfig='contig')
-    # Image.fromarray(label).save("label.png")
+        tiff.imsave("image_%d.tif" % i, image, planarconfig='contig')
+        Image.fromarray(label).save("label_%d.png" % i)

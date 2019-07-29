@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pandas as pd
 
-from params import *
-
 parser     = argparse.ArgumentParser()
 parser.add_argument('--csv_history', default="history.csv", help='Path to file containing training log')
 parser.add_argument('--title', help='Plot title', type=str, default="")
@@ -30,18 +28,16 @@ def plotloss(csvfile):
     val_acc = np.asarray(loss_values.iloc[:, 2])
 
     fig, ax1 = plt.subplots(figsize=(8, 6))
-    # ax2 = ax1.twinx()
+    ax2 = ax1.twinx()
 
     # Label and color the axes
     ax1.set_xlabel('Epoch', fontsize=16)
-    ax1.set_ylabel('Training loss', fontsize=16, color='black')
-    # ax2.set_ylabel('Validation loss', fontsize=16, color='black')
+    ax1.set_ylabel('Loss', fontsize=16, color='black')
+    ax2.set_ylabel('Accuracy', fontsize=16, color='black')
 
     # Plot valid/train losses
     ax1.plot(epoch, tr_loss, linewidth=2,
              ls='--', color='#c92508', label='Train loss')
-    ax1.plot(epoch, val_acc, linewidth=2,
-             color='#2348ff', label='Validation loss')
     ax1.spines['left'].set_color('#f23d1d')
     # Coloring the ticks
     for label in ax1.get_yticklabels():
@@ -49,13 +45,13 @@ def plotloss(csvfile):
         label.set_size(12)
 
     # Plot valid/trian accuracy
-    # ax2.loglog(epoch, val_acc, linewidth=2,
-    #          color='#2348ff', label='Validation Accuracy')
-    # ax2.spines['right'].set_color('#2348ff')
+    ax2.plot(epoch, val_acc, linewidth=2,
+             color='#2348ff', label='Validation Accuracy')
+    ax2.spines['right'].set_color('#2348ff')
     # Coloring the ticks
-    # for label in ax2.get_yticklabels():
-    #     label.set_color('#2348ff')
-    #     label.set_size(12)
+    for label in ax2.get_yticklabels():
+        label.set_color('#2348ff')
+        label.set_size(12)
 
     # Manually setting the y-axis ticks
     # yticks = np.arange(0, 1.1, 0.1)

@@ -1,18 +1,14 @@
+import os
+
 import numpy as np
 from PIL import Image
 
 import torch
 import torch.nn as nn
 
-from dataset import *
-import os
-import csv
-
 from tqdm import tqdm
 
-
-
-def train_model(model, train_loader, criterion, optimizer, scheduler, keep_rate=1.0):
+def train_model(model, data_loader, criterion, optimizer, scheduler):
     """Train the model and report validation error with training error
     Args:
         model: the model to be trained
@@ -21,7 +17,8 @@ def train_model(model, train_loader, criterion, optimizer, scheduler, keep_rate=
     """    
     model.train()
     epoch_loss = []
-    pbar = tqdm(train_loader)
+    pbar = tqdm(data_loader)
+
     for batch_idx, (images, labels) in enumerate(pbar):
         images = images.cuda()
         labels = labels.cuda()
@@ -29,80 +26,57 @@ def train_model(model, train_loader, criterion, optimizer, scheduler, keep_rate=
         outputs = model(images)
 
         # calculate loss and remove loss of ignore_index
-        loss = criterion(outputs, labels)
+        loss    = criterion(outputs, labels)
+        loss    = torch.sum(loss, dim=1)
+
+        labels  = torch.max(labels, dim=1)[0]
+        
+        loss    = loss * labels
+
+        loss = loss.mean()
 
         optimizer.zero_grad()
         loss.backward()
-        # Update weights
         optimizer.step()
 
+        pbar.set_description("%.3f" % loss.item())
         epoch_loss.append(loss.item())
+        
     scheduler.step(np.mean(epoch_loss))
+    return np.mean(epoch_loss)
 
-def get_loss(model, data, criterion):
+def evaluate_model(model, data_loader, criterion, metric=False):
     """
         Calculate loss over train set
     """
+    total_acc   = []
+    total_pixel = []
+
     model.eval()
-    total_loss = 0
-    for batch, (images, labels) in enumerate(data):
-        with torch.no_grad():
-            images = images.cuda()
-            labels = labels.cuda()
+    with torch.no_grad():
+        for batch, (images, labels) in enumerate(data_loader):
+            images      = images.cuda()
             
-            outputs = model(images)
+            outputs     = model(images)
+            outputs     = outputs.cpu().numpy()
+            predicted   = np.argmax(outputs, axis=1)
 
-            loss = criterion(outputs, labels)
-                        
-            total_loss += loss.item()
-    return total_loss / (batch + 1)
+            labels      = labels.data.numpy()
+            
+            # mask out un-labledl pixels
+            mask        = np.max(labels, axis=1)
 
-def test_model(model_path, data_loader, epoch, save_folder_name='prediction'):
-    model = torch.load(model_path)
-    model = model.cuda()
+            labels      = np.argmax(labels, axis=1)
+            
+            num_pixel   = np.sum(mask)
+            total_pixel.append(num_pixel)
 
-    model.eval()
-    for batch, (images_t) in enumerate(data_loader):
-        stacked_img = torch.Tensor([]).cuda()
-        for index in range(images_t.size()[1]):
-            with torch.no_grad():
-                image_t = Variable(images_t[:, index, :, :].unsqueeze(0).cuda())
-                # print(image_v.shape, mask_v.shape)
-                output_t = model(image_t)
-                output_t = torch.argmax(output_t, dim=1).float()
-                stacked_img = torch.cat((stacked_img, output_t))
-        im_name = batch  # TODO: Change this to real image name so we know
-        _ = save_prediction_image(stacked_img, im_name, epoch, save_folder_name)
-    print("Finish Prediction!")
+            # calculate acc
+            matches     = (predicted == labels).astype(np.uint8)
+            matches     = matches * mask
 
-def save_prediction_image(stacked_img, im_name, epoch, save_folder_name="result_images", save_im=True):
-    """save images to save_path
-    Args:
-        stacked_img (numpy): stacked cropped images
-        save_folder_name (str): saving folder name
-    """
-    div_arr = division_array(388, 2, 2, 512, 512)
-    img_cont = image_concatenate(stacked_img.cpu().data.numpy(), 2, 2, 512, 512)
-    img_cont = polarize((img_cont)/div_arr)*255
-    img_cont_np = img_cont.astype('uint8')
-    img_cont = Image.fromarray(img_cont_np)
-    # organize images in every epoch
-    desired_path = save_folder_name + '/epoch_' + str(epoch) + '/'
-    # Create the path if it does not exist
-    if not os.path.exists(desired_path):
-        os.makedirs(desired_path)
-    # Save Image!
-    export_name = str(im_name) + '.png'
-    img_cont.save(desired_path + export_name)
-    return img_cont_np
-
-def polarize(img):
-    ''' Polarize the value to zero and one
-    Args:
-        img (numpy): numpy array of image to be polarized
-    return:
-        img (numpy): numpy array only with zero and one
-    '''
-    img[img >= 0.5] = 1
-    img[img < 0.5] = 0
-    return img
+            num_correct = np.sum(matches)
+            total_acc.append(num_correct / num_pixel)
+            
+    total_pixel = total_pixel / np.sum(total_pixel)
+    return np.sum(total_acc * total_pixel)
