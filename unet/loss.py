@@ -43,5 +43,5 @@ def masked_dbce_loss(outputs, labels):
     bce_loss    = masked_bce_loss(outputs, labels)
     dice_loss   = masked_dice_loss(outputs, labels)
 
-    return bce_loss + 2 * dice_loss
+    return (bce_loss + 2 * dice_loss) / 3.0
 
