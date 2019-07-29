@@ -163,10 +163,9 @@ def predict():
             high_prob_masks = (probs > 0.9).astype(np.uint8)
             preds           = preds * high_prob_masks
 
-            print(preds.shape, masks.shape)
             for (pred, mask) in zip(preds, masks):
                 pred        = pred * mask
-                label       = Image.fromarray(pred)
+                label       = Image.fromarray(pred).convert("L")
                 
                 basename    = dataset.get_basename(batch_idx)
                 label.save(os.path.join(args.save_dir, "%s.png" % basename))
