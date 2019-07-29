@@ -157,7 +157,7 @@ def predict():
             preds   = np.argmax(probs, axis=1).astype(np.uint8) + 1 # 1 * H * W
             probs   = np.max(probs, axis=1) # 1 * H * W
 
-            high_prob_masks = (probs > 0.95).astype(np.uint8)
+            high_prob_masks = (probs > 0.99).astype(np.uint8)
             preds           = preds * high_prob_masks # 1 * H * W
             pred            = preds[0, ...] # H x W
 
