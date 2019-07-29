@@ -25,7 +25,6 @@ def train_model(model, data_loader, criterion, optimizer, scheduler):
 
         outputs = model(images)
 
-        # calculate loss and remove loss of ignore_index
         loss    = criterion(outputs, labels)
 
         optimizer.zero_grad()
@@ -42,6 +41,7 @@ def evaluate_model(model, data_loader, criterion, metric=False):
     """
         Calculate loss over train set
     """
+    total_loss  = []
     total_acc   = []
     total_pixel = []
 
@@ -49,16 +49,19 @@ def evaluate_model(model, data_loader, criterion, metric=False):
     with torch.no_grad():
         for batch, (images, labels) in enumerate(data_loader):
             images      = images.cuda()
+            labels      = labels.cuda()
             
             outputs     = model(images)
+            loss        = criterion(outputs, labels)
+            total_loss.append(loss.item())
+
             outputs     = outputs.cpu().numpy()
             predicted   = np.argmax(outputs, axis=1)
 
-            labels      = labels.data.numpy()
+            labels      = labels.cpu().numpy()
             
             # mask out un-labledl pixels
             mask        = np.max(labels, axis=1)
-
             labels      = np.argmax(labels, axis=1)
             
             num_pixel   = np.sum(mask)
@@ -72,4 +75,4 @@ def evaluate_model(model, data_loader, criterion, metric=False):
             total_acc.append(num_correct / num_pixel)
             
     total_pixel = total_pixel / np.sum(total_pixel)
-    return np.sum(total_acc * total_pixel)
+    return np.sum(total_loss * total_pixel), np.sum(total_acc * total_pixel)

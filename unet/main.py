@@ -95,7 +95,7 @@ def train():
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10, verbose=True)
 
     # Saving History to csv
-    header = ['epoch', 'train_loss', 'val_acc']
+    header = ['epoch', 'train_loss', 'val_loss', 'val_acc']
     
     save_dir = os.path.join(args.save_dir, args.loss_fn)
     if not os.path.exists(save_dir):
@@ -108,10 +108,10 @@ def train():
         
         # validation every 5 epoch
         if (i + 1) % args.val_interval == 0:
-            val_acc = evaluate_model(model, val_loader, criterion, metric=True)
-            print('Epoch %d, Train loss: %.5f, Val acc: %.4f' % (i + 1, train_loss, val_acc))
+            val_loss, val_acc = evaluate_model(model, val_loader, criterion, metric=True)
+            print('Epoch %d, Train loss: %.5f, Val loss: %.5f, Val acc: %.4f' % (i + 1, train_loss, val_loss, val_acc))
 
-            values  = [i + 1, train_loss, val_acc]
+            values  = [i + 1, train_loss, val_loss, val_acc]
             export_history(header, values, save_dir, save_file_name)
 
         if (i + 1) % args.save_interval == 0:  # save model every save_interval epoch
