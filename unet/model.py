@@ -63,7 +63,7 @@ class UNet(nn.Module):
         out = self.conv_last(x)
         
         # return out
-        return F.sigmoid(out)
+        return torch.sigmoid(out)
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
