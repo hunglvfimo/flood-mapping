@@ -70,7 +70,7 @@ def train():
     val_loader      = torch.utils.data.DataLoader(dataset=val_dataset,   num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
 
     # Model
-    model = UNet(in_channels=11, n_classes=2, depth=3, batch_norm=True, padding=True)
+    model = UNet(in_channels=11, n_classes=2, depth=2, batch_norm=True, padding=True)
     # model = UNet(in_channels=11, n_classes=2)
 
     if args.snapshot:
