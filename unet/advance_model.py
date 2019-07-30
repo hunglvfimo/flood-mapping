@@ -69,7 +69,7 @@ class UNet(nn.Module):
         for i, up in enumerate(self.up_path):
             x = up(x, blocks[-i - 1])
 
-        return self.last(x)
+        return torch.sigmoid(self.last(x))
 
 
 class UNetConvBlock(nn.Module):
