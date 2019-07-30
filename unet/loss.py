@@ -20,6 +20,7 @@ def masked_dice_loss(outputs, labels, classes_weights=[0.33, 0.67]):
     weights         = torch.empty((outputs.shape[1], outputs.shape[2], outputs.shape[3]))
     for i in range(outputs.shape[1]):
         weights[i, ...]     = classes_weights[i]
+    weights = weights.cuda()
 
     # mask for labeled pixel
     mask            = torch.max(labels, dim=1)[0] # Batch_size x Height x Width
