@@ -16,6 +16,9 @@ from modules import *
 from save_history import *
 from loss import masked_bce_loss, masked_dice_loss, masked_dbce_loss
 
+# from model import UNet
+from advance_model import UNet
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--train', help='Multualy exclusive with --predict.', action='store_true')
 parser.add_argument('--predict', help='Multualy exclusive with --train.', action='store_true')
@@ -53,10 +56,7 @@ def train():
                 flip_y_chance=0.5,
             )
     else:
-        transform_generator = random_transform_generator(
-                flip_x_chance=0.5,
-                flip_y_chance=0.5,
-            )
+        transform_generator = None
 
     # create custome dataset
     train_dataset   = SEMDataset(os.path.join(args.train_dir, "img"), 
@@ -70,11 +70,8 @@ def train():
     val_loader      = torch.utils.data.DataLoader(dataset=val_dataset,   num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
 
     # Model
-    # from advance_model import UNet
-    # model = UNet(in_channels=11, n_classes=3, depth=args.model_depth, batch_norm=True, padding=True)
-    
-    from model import UNet
-    model = UNet(in_channels=11, n_classes=2)
+    model = UNet(in_channels=11, n_classes=2, depth=3, batch_norm=True, padding=True)
+    # model = UNet(in_channels=11, n_classes=2)
 
     if args.snapshot:
         model = torch.load(args.snapshot)
@@ -127,8 +124,7 @@ def evaluate():
                                                 num_workers=args.num_workers, 
                                                 batch_size=1, 
                                                 shuffle=False)
-    from model import UNet
-    model = UNet(in_channels=11, n_classes=2)
+    # model = UNet(in_channels=11, n_classes=2)
     model = torch.load(args.snapshot)
     model = model.cuda()
 
@@ -143,8 +139,7 @@ def predict():
                         transform_generator=None)
     loader      = torch.utils.data.DataLoader(dataset=dataset, num_workers=args.num_workers, batch_size=1, shuffle=False)
 
-    from model import UNet
-    model = UNet(in_channels=11, n_classes=2)
+    # model = UNet(in_channels=11, n_classes=2)
     model = torch.load(args.snapshot)
     model = model.cuda()
 
@@ -157,9 +152,8 @@ def predict():
             probs   = model.forward(images).data.cpu().numpy() # 1 * C * H * W
             preds   = np.argmax(probs, axis=1).astype(np.uint8) + 1 # 1 * H * W
             probs   = np.max(probs, axis=1) # 1 * H * W
-
-            # high_prob_masks = (probs > 0.99).astype(np.uint8)
-            # preds           = preds * high_prob_masks # 1 * H * W
+            high_prob_masks = (probs > 0.90).astype(np.uint8)
+            preds           = preds * high_prob_masks # 1 * H * W
             pred            = preds[0, ...] # H x W
 
             no_value_mask   = dataset.get_mask(batch_idx) # H x W

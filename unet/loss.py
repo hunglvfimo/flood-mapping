@@ -15,7 +15,7 @@ def masked_bce_loss(outputs, labels):
     return loss
 
 def masked_dice_loss(outputs, labels):
-    smooth = 1
+    smooth = 1e-7
 
     # mask for labeled pixel
     mask            = torch.max(labels, dim=1)[0] # Batch_size x Height x Width
