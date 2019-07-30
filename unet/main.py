@@ -143,6 +143,8 @@ def predict():
                         transform_generator=None)
     loader      = torch.utils.data.DataLoader(dataset=dataset, num_workers=args.num_workers, batch_size=1, shuffle=False)
 
+    from model import UNet
+    model = UNet(in_channels=11, n_classes=2)
     model = torch.load(args.snapshot)
     model = model.cuda()
 
