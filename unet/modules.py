@@ -6,6 +6,8 @@ from PIL import Image
 import torch
 import torch.nn as nn
 
+from sklearn.metrics import f1_score
+
 from tqdm import tqdm
 
 def train_model(model, data_loader, criterion, optimizer, scheduler):
@@ -79,3 +81,35 @@ def evaluate_model(model, data_loader, criterion, metric=False):
             
     total_pixel = total_pixel / np.sum(total_pixel)
     return np.sum(total_loss * total_pixel), np.sum(total_acc * total_pixel)
+
+def score_model(model, data_loader):
+    """
+        Calculate loss over train set
+    """
+    y_pred = []
+    y_true = []
+    
+    model.eval()
+    with torch.no_grad():
+        for batch, (images, labels) in enumerate(data_loader):
+            images      = images.cuda() # 1 x C x H x W
+            
+            outputs     = model(images) # 1 x C x H x W
+            outputs     = outputs.cpu().numpy()
+            preds       = np.argmax(outputs, axis=1) # 1 x H x W
+
+            labels      = labels.numpy() # 1 x C x H x W
+            masks       = np.max(labels, axis=1) # 1 x H x W
+            labels      = np.argmax(labels, axis=1) # 1 x H x W
+
+            pred        = preds[0, ...] # H x W
+            mask        = masks[0, ...] # H x W
+            label       = labels[0, ...] # H x W
+
+            indices_y, indices_x = np.where(mask > 0)
+            for y, x in zip(indices_y, indices_x):
+                y_pred.append(pred[y, x])
+                y_true.append(label[y, x])
+
+    return f1_score(y_true, y_pred, average='macro'), f1_score(y_true, y_pred, average='micro')
+            

@@ -125,15 +125,16 @@ def evaluate():
                             os.path.join(args.val_dir, "label"))
     val_loader      = torch.utils.data.DataLoader(dataset=val_dataset, 
                                                 num_workers=args.num_workers, 
-                                                batch_size=args.batch_size, 
+                                                batch_size=1, 
                                                 shuffle=False)
     from model import UNet
     model = UNet(in_channels=11, n_classes=2)
     model = torch.load(args.snapshot)
     model = model.cuda()
 
-    _, val_acc = evaluate_model(model, val_loader, None, metric=True)
-    print('Overall acc: %.4f' % val_acc)
+    macro_f1, micro_f1 = score_model(model, val_loader)
+    print("macro_f1", macro_f1)
+    print("micro_f1", micro_f1)
 
 def predict():
     if not os.path.exists(args.save_dir):
