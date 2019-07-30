@@ -14,14 +14,21 @@ def masked_bce_loss(outputs, labels):
     loss    = loss.mean()
     return loss
 
-def masked_dice_loss(outputs, labels):
+def masked_dice_loss(outputs, labels, classes_weights=[0.33, 0.67]):
     smooth = 1e-7
+
+    weights         = torch.empty((outputs.shape[1], outputs.shape[2], outputs.shape[3]))
+    for i in range(outputs.shape[1]):
+        weights[i, ...]     = classes_weights[i]
 
     # mask for labeled pixel
     mask            = torch.max(labels, dim=1)[0] # Batch_size x Height x Width
 
     # Intersction
     intersection    = outputs * labels # Batch_size x C x Height x Width
+    intersection    = intersection * weights
+    # intersection    = torch.sum(torch.sum(torch.sum(intersection, dim=0), dim=1), dim=1) # calc sum intersection by C. Output C values
+    # intersection    = intersection * torch.from_numpy(classes_weights).float()
     intersection    = torch.sum(intersection, dim=1) # Batch_size x Height x Width
 
     # Union
