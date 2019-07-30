@@ -6,7 +6,7 @@ from PIL import Image
 import torch
 import torch.nn as nn
 
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, confusion_matrix
 
 from tqdm import tqdm
 
@@ -111,5 +111,7 @@ def score_model(model, data_loader):
                 y_pred.append(pred[y, x])
                 y_true.append(label[y, x])
 
-    return f1_score(y_true, y_pred, average='macro'), f1_score(y_true, y_pred, average='micro')
+    print("macro_f1", f1_score(y_true, y_pred, average='macro'))
+    print("weighted_f1", f1_score(y_true, y_pred, average='weighted'))
+    print(confusion_matrix(y_true, y_pred))
             

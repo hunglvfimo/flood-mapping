@@ -132,9 +132,7 @@ def evaluate():
     model = torch.load(args.snapshot)
     model = model.cuda()
 
-    macro_f1, micro_f1 = score_model(model, val_loader)
-    print("macro_f1", macro_f1)
-    print("micro_f1", micro_f1)
+    score_model(model, val_loader)
 
 def predict():
     if not os.path.exists(args.save_dir):
@@ -158,8 +156,8 @@ def predict():
             preds   = np.argmax(probs, axis=1).astype(np.uint8) + 1 # 1 * H * W
             probs   = np.max(probs, axis=1) # 1 * H * W
 
-            high_prob_masks = (probs > 0.99).astype(np.uint8)
-            preds           = preds * high_prob_masks # 1 * H * W
+            # high_prob_masks = (probs > 0.99).astype(np.uint8)
+            # preds           = preds * high_prob_masks # 1 * H * W
             pred            = preds[0, ...] # H x W
 
             no_value_mask   = dataset.get_mask(batch_idx) # H x W
