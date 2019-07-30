@@ -22,6 +22,7 @@ from advance_model import UNet
 parser = argparse.ArgumentParser()
 parser.add_argument('--train', help='Multualy exclusive with --predict.', action='store_true')
 parser.add_argument('--predict', help='Multualy exclusive with --train.', action='store_true')
+parser.add_argument('--prob_thres', help='Use with --predict.', action='store_true')
 parser.add_argument('--evaluate', help='Multualy exclusive with --train.', action='store_true')
 parser.add_argument('--transform', help='', action='store_true')
 parser.add_argument('--loss_fn', type=str, default="bce")
@@ -152,8 +153,9 @@ def predict():
             probs   = model.forward(images).data.cpu().numpy() # 1 * C * H * W
             preds   = np.argmax(probs, axis=1).astype(np.uint8) + 1 # 1 * H * W
             probs   = np.max(probs, axis=1) # 1 * H * W
-            high_prob_masks = (probs > 0.90).astype(np.uint8)
-            preds           = preds * high_prob_masks # 1 * H * W
+            if args.prob_thres:
+                high_prob_masks = (probs > 0.90).astype(np.uint8)
+                preds           = preds * high_prob_masks # 1 * H * W
             pred            = preds[0, ...] # H x W
 
             no_value_mask   = dataset.get_mask(batch_idx) # H x W
