@@ -1,0 +1,1 @@
+Semi-supervised model for flood mapping with U-Net architecture and Dice loss. The Dice loss is modified so that the model can be trained with incompleted annotation. On other words, non-annotated pixels are ignored during loss calculation and gradient updating.
